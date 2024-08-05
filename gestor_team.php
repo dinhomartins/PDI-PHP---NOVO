@@ -10,7 +10,7 @@ include 'api/db.php';
 $gestor_id = $_SESSION['user_id'];
 
 // Obtém as áreas de atuação do gestor
-$sql_areas = "SELECT area_id FROM manager_areas WHERE manager_id = ?";
+$sql_areas = "SELECT a.name FROM manager_areas ma JOIN areas a ON ma.area_id = a.id WHERE ma.manager_id = ?";
 $stmt_areas = $conn->prepare($sql_areas);
 $stmt_areas->bind_param('i', $gestor_id);
 $stmt_areas->execute();
@@ -18,7 +18,7 @@ $result_areas = $stmt_areas->get_result();
 
 $areas = [];
 while ($row = $result_areas->fetch_assoc()) {
-    $areas[] = $row['area_id'];
+    $areas[] = $row['name'];
 }
 
 $stmt_areas->close();
@@ -28,14 +28,11 @@ if (count($areas) > 0) {
     $areas_placeholder = implode(',', array_fill(0, count($areas), '?'));
 
     // Prepara a consulta para obter os funcionários da mesma área do gestor
-    $sql = "SELECT users.id, users.name, users.email, users.position, areas.name as area_name 
-            FROM users 
-            JOIN areas ON users.area = areas.id 
-            WHERE users.area IN ($areas_placeholder)";
+    $sql = "SELECT id, name, email, position, area FROM users WHERE area IN ($areas_placeholder)";
     $stmt = $conn->prepare($sql);
 
     // Adiciona os parâmetros dinamicamente
-    $types = str_repeat('i', count($areas));
+    $types = str_repeat('s', count($areas));
     $stmt->bind_param($types, ...$areas);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -77,7 +74,7 @@ $conn->close();
                             Nome: <?= htmlspecialchars($employee['name'], ENT_QUOTES, 'UTF-8') ?><br>
                             Email: <?= htmlspecialchars($employee['email'], ENT_QUOTES, 'UTF-8') ?><br>
                             Cargo: <?= htmlspecialchars($employee['position'], ENT_QUOTES, 'UTF-8') ?><br>
-                            Área: <?= htmlspecialchars($employee['area_name'], ENT_QUOTES, 'UTF-8') ?><br>
+                            Área: <?= htmlspecialchars($employee['area'], ENT_QUOTES, 'UTF-8') ?><br>
                             <button class="bg-blue-500 text-white p-2 rounded mt-2" onclick="viewEmployeeDetails(<?= $employee['id'] ?>)">Ver Detalhes</button>
                         </li>
                     <?php endforeach; ?>

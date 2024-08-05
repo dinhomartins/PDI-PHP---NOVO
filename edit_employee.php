@@ -29,6 +29,17 @@ if ($result_positions->num_rows > 0) {
     }
 }
 
+// Obtém a lista de áreas de atuação
+$sql_areas = "SELECT id, name FROM areas";
+$result_areas = $conn->query($sql_areas);
+
+$areas = [];
+if ($result_areas->num_rows > 0) {
+    while ($row = $result_areas->fetch_assoc()) {
+        $areas[] = $row;
+    }
+}
+
 $conn->close();
 ?>
 
@@ -67,7 +78,13 @@ $conn->close();
                     </div>
                     <div class="mb-4">
                         <label for="area" class="block text-sm font-medium text-gray-700">Área de Atuação</label>
-                        <input type="text" name="area" id="area" value="<?= htmlspecialchars($employee['area'], ENT_QUOTES, 'UTF-8') ?>" class="border p-2 w-full">
+                        <select name="area" id="area" class="border p-2 w-full">
+                            <?php foreach ($areas as $area): ?>
+                                <option value="<?= htmlspecialchars($area['name'], ENT_QUOTES, 'UTF-8') ?>" <?= $employee['area'] === $area['name'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($area['name'], ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mt-4">
                         <button type="submit" class="bg-blue-500 text-white p-2 w-full md:w-auto rounded lg:w-[200px]">Salvar</button>
